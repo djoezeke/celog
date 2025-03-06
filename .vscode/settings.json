@@ -1,7 +1,0 @@
-{
-  "files.associations": {
-    "*.glsl": "hlsl",
-    "log.h": "c",
-    "system_error": "cpp"
-  }
-}

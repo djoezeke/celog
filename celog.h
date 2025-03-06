@@ -9,19 +9,24 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#include "ceconfig.h"
+
+// Default log level if not defined
 #ifndef CELOG_LOG_LEVEL
 #define CELOG_LOG_LEVEL (7)
 #endif // CELOG_LOG_LEVEL
 
+// Default color setting if not defined
 #ifndef CELOG_COLOR
 #define CELOG_COLOR (1)
 #endif // CELOG_COLOR
 
+// Default style setting if not defined
 #ifndef CELOG_STYLE
 #define CELOG_STYLE (1)
 #endif // CELOG_STYLE
 
-// log levels the same as syslog
+// Log levels, same as syslog
 #define CELOG_EMERGENCY (0)
 #define CELOG_ALERT (1)
 #define CELOG_CRITICAL (2)
@@ -31,7 +36,7 @@
 #define CELOG_INFO (6)
 #define CELOG_DEBUG (7)
 
-// to disable file info logging
+// File info logging format
 #if !defined(CELOG_NO_FILE_INFO)
 #if !defined(CELOG_FILE_FORMAT)
 #define CELOG_FILE_FORMAT "File (%s:%d) "
@@ -40,24 +45,25 @@
 #define CELOG_FILE_FORMAT ""
 #endif // CELOG_NO_FILE_INFO
 
-// to disable function info logging
+// Function info logging format
 #if !defined(CELOG_NO_FUNC_INFO)
 #if !defined(CELOG_FUNC_FORMAT)
-#define CELOG_FUNC_FORMAT "In Fuction '%s%s%s' : "
+#define CELOG_FUNC_FORMAT "In Function '%s' : "
 #endif // CELOG_FUNC_FORMAT
 #else
-#define CELOG_FILE_FORMAT ""
+#define CELOG_FUNC_FORMAT ""
 #endif // CELOG_NO_FUNC_INFO
 
-#ifndef CELOG_TIME_FORMAT
+// Time and date format for logging
+#if !defined(CELOG_TIME_FORMAT)
 #define CELOG_TIME_FORMAT "%H:%M:%S"
 #endif // CELOG_TIME_FORMAT
 
-#ifndef CELOG_DATE_FORMAT
+#if !defined(CELOG_DATE_FORMAT)
 #define CELOG_DATE_FORMAT "%Y-%m-%d"
 #endif // CELOG_DATE_FORMAT
 
-// colors
+// Color definitions
 #define NONE "\e[0m"
 #define BLACK "\e[0;30m"
 #define RED "\e[0;31m"
@@ -85,75 +91,132 @@
 #define CLEAR "\e[2J"
 #define CLRLINE "\r\e[K" // or "\e[1K\r"
 
-// #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+// File name macro
 #define __FILENAME__ __FILE__
 
-/* safe readable version of errno */
+// Safe readable version of errno
 #define clean_errno() (errno == 0 ? "None" : strerror(errno))
 
-#define celog_emerg(message, ...)                                                  \
-    do                                                                             \
-    {                                                                              \
-        fprintf(stderr, RED "[EMERGENCY]   "                                       \
-                            "%s (%s:%d) " NONE message YELLOW " errno: %s\n" NONE, \
-                __func__, __FILE__, __LINE__, ##__VA_ARGS__, clean_errno());       \
+// Logging macros for different levels
+#define celog_emerg(message, ...)                                                             \
+    do                                                                                        \
+    {                                                                                         \
+        struct tm *tim;                                                                       \
+        time_t t = time(NULL);                                                                \
+        tim = localtime(&t);                                                                  \
+        char buf[80];                                                                         \
+        buf[strftime(buf, sizeof(buf), CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT, tim)] = '\0'; \
+        fprintf(stderr, "%s", buf);                                                           \
+        fprintf(stderr, " [" RED "EMERGENCY" NONE "] ");                                      \
+        fprintf(stderr, CELOG_FUNC_FORMAT, __func__, NONE);                                   \
+        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                               \
+        fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
+        /* fprintf(stderr, RED "%s" NONE, clean_errno());    */                               \
     } while (0)
-#define celog_alert(message, ...)                                                     \
-    do                                                                                \
-    {                                                                                 \
-        fprintf(stderr, PURPLE "[ALERT]   "                                           \
-                               "%s (%s:%d) " NONE message YELLOW " errno: %s\n" NONE, \
-                __func__, __FILE__, __LINE__, ##__VA_ARGS__, clean_errno());          \
+
+#define celog_alert(message, ...)                                                             \
+    do                                                                                        \
+    {                                                                                         \
+        struct tm *tim;                                                                       \
+        time_t t = time(NULL);                                                                \
+        tim = localtime(&t);                                                                  \
+        char buf[80];                                                                         \
+        buf[strftime(buf, sizeof(buf), CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT, tim)] = '\0'; \
+        fprintf(stderr, "%s", buf);                                                           \
+        fprintf(stderr, " [" PURPLE "ALERT" NONE "] ");                                       \
+        fprintf(stderr, CELOG_FUNC_FORMAT, __func__, NONE);                                   \
+        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                               \
+        fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
-#define celog_crit(message, ...)                                                      \
-    do                                                                                \
-    {                                                                                 \
-        fprintf(stderr, YELLOW "[CRITICAL]    "                                       \
-                               "%s (%s:%d) " NONE message YELLOW " errno: %s\n" NONE, \
-                __func__, __FILE__, __LINE__, ##__VA_ARGS__, clean_errno());          \
+
+#define celog_crit(message, ...)                                                              \
+    do                                                                                        \
+    {                                                                                         \
+        struct tm *tim;                                                                       \
+        time_t t = time(NULL);                                                                \
+        tim = localtime(&t);                                                                  \
+        char buf[80];                                                                         \
+        buf[strftime(buf, sizeof(buf), CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT, tim)] = '\0'; \
+        fprintf(stderr, "%s", buf);                                                           \
+        fprintf(stderr, " [" YELLOW "CRITICAL" NONE "] ");                                    \
+        fprintf(stderr, CELOG_FUNC_FORMAT, __func__, NONE);                                   \
+        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                               \
+        fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
-#define celog_err(message, ...)                                                      \
-    do                                                                               \
-    {                                                                                \
-        fprintf(stderr, BROWN "[ERROR]     "                                         \
-                              "%s (%s:%d) " NONE message YELLOW " errno: %s\n" NONE, \
-                __func__, __FILE__, __LINE__, ##__VA_ARGS__, clean_errno());         \
+
+#define celog_error(message, ...)                                                               \
+    do                                                                                        \
+    {                                                                                         \
+        struct tm *tim;                                                                       \
+        time_t t = time(NULL);                                                                \
+        tim = localtime(&t);                                                                  \
+        char buf[80];                                                                         \
+        buf[strftime(buf, sizeof(buf), CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT, tim)] = '\0'; \
+        fprintf(stderr, "%s", buf);                                                           \
+        fprintf(stderr, " [" BROWN "ERROR" NONE "] ");                                        \
+        fprintf(stderr, CELOG_FUNC_FORMAT, __func__, NONE);                                   \
+        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                               \
+        fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
-#define celog_warning(message, ...)                                                 \
-    do                                                                              \
-    {                                                                               \
-        fprintf(stderr, BLUE "[WARNING] "                                           \
-                             "%s (%s:%d) " NONE message YELLOW " errno: %s\n" NONE, \
-                __func__, __FILE__, __LINE__, ##__VA_ARGS__, clean_errno());        \
+
+#define celog_warn(message, ...)                                                           \
+    do                                                                                        \
+    {                                                                                         \
+        struct tm *tim;                                                                       \
+        time_t t = time(NULL);                                                                \
+        tim = localtime(&t);                                                                  \
+        char buf[80];                                                                         \
+        buf[strftime(buf, sizeof(buf), CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT, tim)] = '\0'; \
+        fprintf(stderr, "%s", buf);                                                           \
+        fprintf(stderr, " [" BLUE "WARNING" NONE "] ");                                       \
+        fprintf(stderr, CELOG_FUNC_FORMAT, __func__, NONE);                                   \
+        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                               \
+        fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
-#define celog_notice(message, ...)                                                  \
-    do                                                                              \
-    {                                                                               \
-        fprintf(stderr, CYAN "[NOTICE]  "                                           \
-                             "%s (%s:%d) " NONE message YELLOW " errno: %s\n" NONE, \
-                __func__, __FILE__, __LINE__, ##__VA_ARGS__, clean_errno());        \
+
+#define celog_notice(message, ...)                                                            \
+    do                                                                                        \
+    {                                                                                         \
+        struct tm *tim;                                                                       \
+        time_t t = time(NULL);                                                                \
+        tim = localtime(&t);                                                                  \
+        char buf[80];                                                                         \
+        buf[strftime(buf, sizeof(buf), CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT, tim)] = '\0'; \
+        fprintf(stderr, "%s", buf);                                                           \
+        fprintf(stderr, " [" CYAN "NOTICE" NONE "] ");                                        \
+        fprintf(stderr, CELOG_FUNC_FORMAT, __func__, NONE);                                   \
+        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                               \
+        fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
-#define celog_info(message, ...)                               \
-    do                                                         \
-    {                                                          \
-        fprintf(stderr, GREEN "[INFO]    "                     \
-                              "%s (%s:%d) " NONE message "\n", \
-                __func__, __FILE__, __LINE__, ##__VA_ARGS__);  \
+
+#define celog_info(message, ...)                                                              \
+    do                                                                                        \
+    {                                                                                         \
+        struct tm *tim;                                                                       \
+        time_t t = time(NULL);                                                                \
+        tim = localtime(&t);                                                                  \
+        char buf[80];                                                                         \
+        buf[strftime(buf, sizeof(buf), CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT, tim)] = '\0'; \
+        fprintf(stderr, "%s", buf);                                                           \
+        fprintf(stderr, " [" GREEN "INFO" NONE "] ");                                         \
+        fprintf(stderr, CELOG_FUNC_FORMAT, __func__, NONE);                                   \
+        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                               \
+        fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
-#define celog_debug(message, ...)                                                                         \
-    do                                                                                                    \
-    {                                                                                                     \
-        struct tm *tim;                                                                                   \
-        time_t t = time(NULL);                                                                            \
-        tim = localtime(&t);                                                                              \
-        char buf[64];                                                                                     \
-        buf[strftime(buf, sizeof(buf), L_BLUE CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT NONE, tim)] = '\0'; \
-        /*   fprintf(stderr, "%i - %i\n", t, t2);       */                                                \
-        fprintf(stderr, "%s", buf);                                                                       \
-        fprintf(stderr, " [" BLUE "DEBUG" NONE "] ");                                                     \
-        fprintf(stderr, CELOG_FUNC_FORMAT BLUE, __func__, NONE);                                          \
-        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                                           \
-        fprintf(stderr, message "\n", ##__VA_ARGS__);                                                     \
+
+#define celog_debug(message, ...)                                                             \
+    do                                                                                        \
+    {                                                                                         \
+        struct tm *tim;                                                                       \
+        time_t t = time(NULL);                                                                \
+        tim = localtime(&t);                                                                  \
+        char buf[80];                                                                         \
+        buf[strftime(buf, sizeof(buf), CELOG_DATE_FORMAT " " CELOG_TIME_FORMAT, tim)] = '\0'; \
+        fprintf(stderr, "%s", buf);                                                           \
+        fprintf(stderr, " [" BLUE "DEBUG" NONE "] ");                                         \
+        fprintf(stderr, CELOG_FUNC_FORMAT, __func__, NONE);                                   \
+        fprintf(stderr, CELOG_FILE_FORMAT, __FILE__, __LINE__);                               \
+        fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
 
 /* CELOG_LOG_LEVEL controls */
@@ -182,16 +245,16 @@
 #endif
 
 #if CELOG_LOG_LEVEL < CELOG_WARNING
-#undef celog_warning
-#define celog_warning(message, ...) \
+#undef celog_warn
+#define celog_warn(message, ...) \
     do                              \
     {                               \
     } while (0)
 #endif
 
 #if CELOG_LOG_LEVEL < CELOG_ERROR
-#undef celog_err
-#define celog_err(message, ...) \
+#undef celog_error
+#define celog_error(message, ...) \
     do                          \
     {                           \
     } while (0)
