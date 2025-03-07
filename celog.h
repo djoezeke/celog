@@ -1,3 +1,11 @@
+/**
+ * @file celog.h
+ * @brief A logging library for C programs with various log levels and optional colored output.
+ *
+ * This header file defines macros for logging messages at different levels (emergency, alert, critical, error, warning, notice, info, debug).
+ * It also provides options to include file and function information in the log messages, and to format the output with colors and styles.
+ */
+
 #ifndef DJOEZEKE_CELOG_H
 #define DJOEZEKE_CELOG_H
 
@@ -26,7 +34,9 @@
 #define CELOG_STYLE (1)
 #endif // CELOG_STYLE
 
-// Log levels, same as syslog
+/**
+ * @brief Log levels, same as syslog.
+ */
 #define CELOG_EMERGENCY (0)
 #define CELOG_ALERT (1)
 #define CELOG_CRITICAL (2)
@@ -45,7 +55,9 @@
 #define CELOG_FILE_FORMAT ""
 #endif // CELOG_NO_FILE_INFO
 
-// Function info logging format
+/**
+ * @brief Function info logging format.
+ */
 #if !defined(CELOG_NO_FUNC_INFO)
 #if !defined(CELOG_FUNC_FORMAT)
 #define CELOG_FUNC_FORMAT "In Function '%s' : "
@@ -54,7 +66,9 @@
 #define CELOG_FUNC_FORMAT ""
 #endif // CELOG_NO_FUNC_INFO
 
-// Time and date format for logging
+/**
+ * @brief Time and date format for logging.
+ */
 #if !defined(CELOG_TIME_FORMAT)
 #define CELOG_TIME_FORMAT "%H:%M:%S"
 #endif // CELOG_TIME_FORMAT
@@ -63,7 +77,9 @@
 #define CELOG_DATE_FORMAT "%Y-%m-%d"
 #endif // CELOG_DATE_FORMAT
 
-// Color definitions
+/**
+ * @brief Color definitions.
+ */
 #define NONE "\e[0m"
 #define BLACK "\e[0;30m"
 #define RED "\e[0;31m"
@@ -94,10 +110,14 @@
 // File name macro
 #define __FILENAME__ __FILE__
 
-// Safe readable version of errno
+/**
+ * @brief Safe readable version of errno.
+ */
 #define clean_errno() (errno == 0 ? "None" : strerror(errno))
 
-// Logging macros for different levels
+/**
+ * @brief Logging macros for different levels.
+ */
 #define celog_emerg(message, ...)                                                             \
     do                                                                                        \
     {                                                                                         \
@@ -144,7 +164,7 @@
         fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
 
-#define celog_error(message, ...)                                                               \
+#define celog_error(message, ...)                                                             \
     do                                                                                        \
     {                                                                                         \
         struct tm *tim;                                                                       \
@@ -159,7 +179,7 @@
         fprintf(stderr, message "\n", ##__VA_ARGS__);                                         \
     } while (0)
 
-#define celog_warn(message, ...)                                                           \
+#define celog_warn(message, ...)                                                              \
     do                                                                                        \
     {                                                                                         \
         struct tm *tim;                                                                       \
@@ -247,16 +267,16 @@
 #if CELOG_LOG_LEVEL < CELOG_WARNING
 #undef celog_warn
 #define celog_warn(message, ...) \
-    do                              \
-    {                               \
+    do                           \
+    {                            \
     } while (0)
 #endif
 
 #if CELOG_LOG_LEVEL < CELOG_ERROR
 #undef celog_error
 #define celog_error(message, ...) \
-    do                          \
-    {                           \
+    do                            \
+    {                             \
     } while (0)
 #endif
 

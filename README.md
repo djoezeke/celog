@@ -6,11 +6,11 @@ It provides various logging levels and supports colored and styled output for be
 ## Features ✨
 
 - Multiple log levels:
-  - EMERGENCY
+  - EMERGENCY 🚨
   - ALERT ⚠️
   - CRITICAL ❗
   - ERROR ❌
-  - WARNING ⚠️,
+  - WARNING ⚠️
   - NOTICE 📢
   - INFO ℹ️
   - DEBUG 🐛
@@ -68,14 +68,19 @@ You can configure the log level, color, and style settings by defining or uncomm
 - `CELOG_COLOR`: Enable or disable colored output (default: 1)
 - `CELOG_STYLE`: Enable or disable styled output (default: 1)
 
-Example:
+### Example Configuration
 
-> celog.h
+To customize the logging behavior, you can modify the `ceconfig.h` file:
 
 ```cpp
-#define CELOG_LOG_LEVEL 4  // Set Log Level
-#define CELOG_NO_FILE_INFO // Diable File Info
-#define CELOG_NO_FUNC_INFO // Disable Function Info
+// Set the log level to WARNING
+#define CELOG_LOG_LEVEL 4
+
+// Disable file information in log messages
+#define CELOG_NO_FILE_INFO
+
+// Disable function information in log messages
+#define CELOG_NO_FUNC_INFO
 ```
 
 ### Log Level Controls
@@ -85,10 +90,10 @@ Messages with a log level lower than the defined level will be disabled.
 
 ### Log Information Controls
 
-Celog allows you to control the log information by defining :
+Celog allows you to control the log information by defining:
 
-- `CELOG_NO_FILE_INFO` File Information (i.e name) Logging would be disabled.
-- `CELOG_NO_FUNC_INFO` Function Information (i.e name and line) Logging would be disabled.
+- `CELOG_NO_FILE_INFO`: Disables logging of file information (file name and line number).
+- `CELOG_NO_FUNC_INFO`: Disables logging of function information (function name).
 
 ### Color and Style Controls
 
